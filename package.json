@@ -1,0 +1,35 @@
+{
+  "name": "@inco/lightning-rod",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "module": "index.ts",
+  "workspaces": [
+    "backend",
+    "contracts"
+  ],
+  "scripts": {
+    "test:setup": "docker compose up --detach && pushd contracts && forge compile && popd",
+    "test:e2e": "bun test:setup && pushd backend && bun test:e2e && popd",
+    "test:e2e:base-sepolia": "cd backend && bun test:e2e:base-sepolia",
+    "test": "bun test:setup && bun test:e2e",
+    "lint": "bun prettier --check .",
+    "lint:fix": "bun prettier --write ."
+  },
+  "devDependencies": {
+    "@inco/lightning": "workspace:*",
+    "@types/bun": "latest",
+    "prettier": "^3.5.3",
+    "prettier-plugin-organize-imports": "^4.1.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.8.3"
+  },
+  "overrides": {
+    "@inco/lightning": "0.1.30",
+    "@inco/js": "0.1.33"
+  },
+  "dependencies": {
+    "@inco/js": "^0.1.33"
+  }
+}
