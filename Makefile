@@ -1,7 +1,7 @@
 # Load environment variables from .env file
-include secrets.env
+include contracts/.env
 
-.PHONY: build test deploy clean frontend backend install generate-abi
+.PHONY: build test deploy-base-sepolia clean frontend backend install generate-abi
 
 # Solidity contract commands
 build:
@@ -23,7 +23,7 @@ deploy-base-sepolia:
 		exit 1; \
 	fi
 	@echo "Using Base Sepolia RPC URL from .env"
-	cd contracts && forge script script/ConfidentialWealthComparator.s.sol:DeployConfidentialWealthComparator --rpc-url ${BASE_SEPOLIA_RPC_URL} --broadcast
+	cd contracts && forge script script/ConfidentialWealthComparator.s.sol:DeployConfidentialWealthComparator --rpc-url ${BASE_SEPOLIA_RPC_URL} --broadcast --verify --etherscan-api-key ${ETHERSCAN_API_KEY}
 
 # Frontend commands
 frontend-install:
@@ -72,16 +72,16 @@ clean:
 # Help command
 help:
 	@echo "Available commands:"
-	@echo "  make build          - Build Solidity contracts"
-	@echo "  make test          - Run Solidity tests"
-	@echo "  make deploy        - Deploy contracts (requires RPC_URL)"
-	@echo "  make start         - Start frontend development server"
-	@echo "  make backend-dev   - Start backend development server"
-	@echo "  make docker-up     - Start Docker containers"
-	@echo "  make docker-down   - Stop Docker containers"
-	@echo "  make install       - Install all dependencies"
-	@echo "  make clean         - Clean build artifacts"
-	@echo "  make generate-abi  - Generate contract ABIs" 
-	@echo "  make test-e2e      - Run E2E tests"
-	@echo "  make coverage      - Generate coverage report"
-	@echo "  make help          - Show this help message"
+	@echo "  make build          			- Build Solidity contracts"
+	@echo "  make test          			- Run Solidity tests"
+	@echo "  make deploy-base-sepolia       - Deploy contracts (requires RPC_URL)"
+	@echo "  make start         			- Start frontend development server"
+	@echo "  make backend-dev   			- Start backend development server"
+	@echo "  make docker-up     			- Start Docker containers"
+	@echo "  make docker-down   			- Stop Docker containers"
+	@echo "  make install       			- Install all dependencies"
+	@echo "  make clean         			- Clean build artifacts"
+	@echo "  make generate-abi  			- Generate contract ABIs" 
+	@echo "  make test-e2e      			- Run E2E tests"
+	@echo "  make coverage      			- Generate coverage report"
+	@echo "  make help          			- Show this help message"

@@ -31,19 +31,21 @@ git clone https://github.com/Ericselvig/c-WealthComparator
 cd c-WealthComparator
 ```
 
-2. Install dependencies:
+2. Configure environment variables:
+
+```
+   Create a `secrets.env` file in the root directory using the `secrets.example.env` file as a template.
+
+   Create a `.env` file in the contracts directory from `.env.example` for contract deployment.
+```
+
+3. Install dependencies:
 
 ```bash
 # Install all dependencies
 make install
 ```
 
-3. Configure environment variables:
-
-```
-   Create a `secrets.env` file in the root directory from `secrets.example.env` for contract deployment.
-   Create a `.env` file in the contracts directory from `.env.example` for contract deployment.
-```
 
 ## Testing
 

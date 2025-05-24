@@ -14,8 +14,8 @@ const projectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_ID;
 const metadata = {
   name: "Confidential Wealth Comparator",
   description: "Compare wealth privately using INCO protocol",
-  url: "https://wealth-comparator.com",
-  icons: ["https://avatars.githubusercontent.com/u/37784886"],
+  url: "",
+  icons: [""],
 };
 
 // Initialize wagmi config
