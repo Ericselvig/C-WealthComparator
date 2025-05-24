@@ -103,6 +103,9 @@ make start-client
 make help
 ```
 
+## Architeture Diagram
+![alt text](docs/images/architecture.png)
+
 ## User Flow
 
 1. User connects wallet using the "Connect Wallet" button
