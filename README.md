@@ -79,7 +79,9 @@ make coverage
 make deploy
 ```
 
-1. Start the frontend:
+2. After deploying the contract, update the contract address in `frontend/src/components/wealth-manager.js` with the newly deployed contract address before starting the client.
+
+3. Start the frontend:
 
 ```bash
 make start-client
