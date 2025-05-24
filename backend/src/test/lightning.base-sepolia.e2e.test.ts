@@ -13,7 +13,7 @@ function getEnv(name: string): string {
   return value;
 }
 
-describe('Lightning Base Sepolia E2E', { timeout: 50_000 }, async () => {
+describe('Lightning Base Sepolia E2E', { timeout: 100_000 }, async () => {
   loadDotEnv();
   loadDotEnv('secrets.env');
 

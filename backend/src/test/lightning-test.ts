@@ -185,7 +185,42 @@ export function runE2ETest(testWealths: number[], zap: Lightning, config: E2ECon
 
     it('should identify the richest user correctly', async () => {
       console.log(`\nWaiting for RichestUserUpdated event with requestId ${requestId}\n`);
-      await callbackFulfillPromise;
+      
+      // Set up a more robust event listener with a timeout
+      const eventPromise = new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('Timeout waiting for RichestUserUpdated event'));
+        }, 60000); // 60 second timeout
+
+        const contract = getContract({
+          address: contractAddress,
+          abi: confidentialWealthComparatorAbi,
+          client: publicClient,
+        });
+        
+        const unwatch = contract.watchEvent.RichestUserUpdated(
+          {}, // No filter needed
+          { 
+            onLogs: (logs) => {
+              console.log('Received RichestUserUpdated event:', logs);
+              // Find the event that matches our requestId
+              const matchingLog = logs.find(log => {
+                // The requestId is the second indexed parameter
+                const requestIdFromLog = BigInt(log.topics[2]);
+                return requestIdFromLog === requestId;
+              });
+              if (matchingLog) {
+                console.log(`Found matching event for requestId ${requestId}`);
+                clearTimeout(timeout);
+                unwatch();
+                resolve();
+              }
+            }
+          }
+        );
+      });
+
+      await eventPromise;
       console.log('RichestUserUpdated event received\n');
 
       // Get the richest user using the stored requestId
@@ -209,7 +244,7 @@ export function runE2ETest(testWealths: number[], zap: Lightning, config: E2ECon
 
       // Verify the richest user matches our expectation
       expect(richestUser.toLowerCase()).toBe(expectedRichestUser.toLowerCase());
-    }, 20_000);
+    }, 120_000); // Increased timeout to 120 seconds
   });
 }
 
