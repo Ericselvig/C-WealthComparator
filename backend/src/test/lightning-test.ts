@@ -59,7 +59,7 @@ export function runE2ETest(testWealths: number[], zap: Lightning, config: E2ECon
       console.log('###############################################\n');
       console.log(`# Step 0. Deploy the ConfidentialWealthComparator contract\n`);
       console.log('###############################################\n');
-      contractAddress = await deployWealthComparator(config);
+      contractAddress = await deployWealthComparator(config, accounts);
       console.log(`ConfidentialWealthComparator contract deployed at ${contractAddress}\n`);
       console.log('Running this test has some prerequisites:\n');
       console.log(`- The IncoLite contract ${zap.executorAddress} must be deployed on ${chain.name}\n`);
@@ -248,7 +248,7 @@ export function runE2ETest(testWealths: number[], zap: Lightning, config: E2ECon
   });
 }
 
-async function deployWealthComparator(cfg: E2EConfig): Promise<Address> {
+async function deployWealthComparator(cfg: E2EConfig, accounts: { privateKey: Hex }[]): Promise<Address> {
   console.log('\nDeploying ConfidentialWealthComparator.sol contract...\n');
   const account = privateKeyToAccount(cfg.senderPrivKey);
   const walletClient = createWalletClient({
@@ -266,6 +266,7 @@ async function deployWealthComparator(cfg: E2EConfig): Promise<Address> {
   const txHash = await walletClient.deployContract({
     abi: confidentialWealthComparatorAbi,
     bytecode: confidentialWealthComparatorBuild.bytecode.object as Hex,
+    args: [accounts.map(acc => privateKeyToAccount(acc.privateKey).address)]
   });
 
   const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });

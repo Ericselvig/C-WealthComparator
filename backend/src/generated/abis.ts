@@ -4,10 +4,15 @@
 
 export const confidentialWealthComparatorAbi = [
   {
+    type: 'constructor',
+    inputs: [{ name: 'allowedUsers', internalType: 'address[]', type: 'address[]' }],
+    stateMutability: 'nonpayable',
+  },
+  {
     type: 'function',
     inputs: [{ name: '_users', internalType: 'address[]', type: 'address[]' }],
     name: 'compareWealth',
-    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
+    outputs: [{ name: 'requestId', internalType: 'uint256', type: 'uint256' }],
     stateMutability: 'nonpayable',
   },
   {
@@ -44,7 +49,7 @@ export const confidentialWealthComparatorAbi = [
   },
   {
     type: 'function',
-    inputs: [{ name: '', internalType: 'address', type: 'address' }],
+    inputs: [{ name: '_user', internalType: 'address', type: 'address' }],
     name: 'wealthOf',
     outputs: [{ name: '', internalType: 'euint256', type: 'bytes32' }],
     stateMutability: 'view',
@@ -58,6 +63,7 @@ export const confidentialWealthComparatorAbi = [
     ],
     name: 'RichestUserUpdated',
   },
+  { type: 'error', inputs: [], name: 'CallerNotInco' },
   { type: 'error', inputs: [], name: 'InvalidInput' },
   {
     type: 'error',
@@ -65,4 +71,5 @@ export const confidentialWealthComparatorAbi = [
     name: 'RequestAlreadyFulfilled',
   },
   { type: 'error', inputs: [], name: 'UnauthorizedHandleAccess' },
+  { type: 'error', inputs: [{ name: 'user', internalType: 'address', type: 'address' }], name: 'UserNotAllowed' },
 ] as const
