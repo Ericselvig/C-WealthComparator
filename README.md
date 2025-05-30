@@ -2,6 +2,14 @@
 
 A decentralized application that allows users to compare their wealth privately using the Inco protocol. This application leverages Inco Lightning's confidential computing infrastructure to enable private wealth comparisons while maintaining confidentiality.
 
+## Video Walkthrough
+
+### Smart Contracts & Tests
+https://www.loom.com/share/41b45187051047e6b49f9be0e692d899?sid=7ffc5b16-a0c0-4823-844c-0fab552aa957
+
+### Frontend Demo
+https://www.loom.com/share/d38e7c1551e14fdfa31fc32b43a29cf9?sid=0d3e1cca-fe72-4c35-b337-23b63b2eaf7f
+
 ## Project Structure
 
 ```
@@ -94,6 +102,9 @@ make start-client
 ```bash
 make help
 ```
+
+## Architeture Diagram
+![alt text](docs/images/architecture.png)
 
 ## User Flow
 
