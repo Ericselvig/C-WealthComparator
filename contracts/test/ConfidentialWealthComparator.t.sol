@@ -16,7 +16,30 @@ contract ConfidentialWealthComparatorTest is IncoTest {
 
     function setUp() public override {
         super.setUp();
-        comparator = new ConfidentialWealthComparator();
+
+        address[] memory allowedUsers = new address[](4);
+        allowedUsers[0] = alice;
+        allowedUsers[1] = bob;
+        allowedUsers[2] = eve;
+        allowedUsers[3] = address(this);
+        comparator = new ConfidentialWealthComparator(allowedUsers);
+    }
+
+    function testConstructorInputValidation() public {
+        address[] memory emptyUsers = new address[](0);
+        vm.expectRevert(abi.encodeWithSelector(ConfidentialWealthComparator.InvalidInput.selector));
+        new ConfidentialWealthComparator(emptyUsers);
+    }
+
+    function testOnlyAllowedUserCanSubmitWealth() public {
+        uint256 carolWealth = 1 ether;
+        bytes memory encryptedWealth = fakePrepareEuint256Ciphertext(carolWealth);
+
+        vm.expectRevert(abi.encodeWithSelector(ConfidentialWealthComparator.UserNotAllowed.selector, carol));
+        vm.prank(carol);
+        comparator.submitWealth(encryptedWealth);
+
+        processAllOperations();
     }
 
     function testSubmitWealthEOA() public {
@@ -85,6 +108,15 @@ contract ConfidentialWealthComparatorTest is IncoTest {
         assertEq(comparator.getRichestUser(requestId), bob);
     }
 
+    function testOnlyAllowedUsersCanCompareWealth() public {
+        address[] memory users = new address[](2);
+        users[0] = alice;
+        users[1] = carol;
+
+        vm.expectRevert(abi.encodeWithSelector(ConfidentialWealthComparator.UserNotAllowed.selector, carol));
+        comparator.compareWealth(users);
+    }
+
     function testCompareWealthRevertsIfInputIsEmpty() public {
         address[] memory users = new address[](0);
         vm.expectRevert(abi.encodeWithSelector(ConfidentialWealthComparator.InvalidInput.selector));
@@ -93,7 +125,7 @@ contract ConfidentialWealthComparatorTest is IncoTest {
 
     function testOnlyIncoCanCallTheDecryptionCallback() public {
         vm.prank(alice);
-        vm.expectRevert(abi.encodeWithSelector(ConfidentialWealthComparator.UnauthorizedHandleAccess.selector));
+        vm.expectRevert(abi.encodeWithSelector(ConfidentialWealthComparator.CallerNotInco.selector));
         comparator.decryptionCallback(0, 0, "");
     }
 

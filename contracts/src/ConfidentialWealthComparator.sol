@@ -20,17 +20,30 @@ contract ConfidentialWealthComparator {
     error UnauthorizedHandleAccess();
     error RequestAlreadyFulfilled(uint256 requestId);
     error InvalidInput();
+    error CallerNotInco();
+    error UserNotAllowed(address user);
+
+    /////// STRUCTS ////////
+    struct UserState {
+        euint256 wealth;
+        bool isAllowed;
+    }
 
     //////// STORAGE ////////
-
-    // SLOT 0
-    uint256 private latestRequestId;
-
     mapping(uint256 requestId => address richestUser) private richestUserByRequestId;
-    mapping(address => euint256) public wealthOf;
+    mapping(address => UserState) private userStates;
 
     //////// EVENTS ////////
     event RichestUserUpdated(address indexed user, uint256 indexed requestId);
+
+    constructor(address[] memory allowedUsers) {
+        uint256 allowedUsersLength = allowedUsers.length;
+        if (allowedUsersLength == 0) revert InvalidInput();
+
+        for (uint256 i; i < allowedUsersLength; ++i) {
+            userStates[allowedUsers[i]].isAllowed = true;
+        }
+    }
 
     //////// EXTERNAL FUNCTIONS ////////
 
@@ -57,24 +70,27 @@ contract ConfidentialWealthComparator {
     /**
      * @notice Compares the wealth of multiple users and returns the address of the richest user.
      * @param _users An array of user addresses to compare.
-     * @return The ID of the decryption request.
+     * @return requestId The ID of the decryption request.
      */
-    function compareWealth(address[] calldata _users) external returns (uint256) {
+    function compareWealth(address[] calldata _users) external returns (uint256 requestId) {
         if (_users.length == 0) revert InvalidInput();
 
-        euint256 richestUserWealthEncrypted = wealthOf[_users[0]];
-        euint256 richestUserEncrypted = uint256(uint160(_users[0])).asEuint256();
+        euint256 richestUserWealthEncrypted;
+        euint256 richestUserEncrypted;
 
-        for (uint256 i = 1; i < _users.length; ++i) {
-            ebool success = wealthOf[_users[i]].ge(richestUserWealthEncrypted);
-            richestUserWealthEncrypted = success.select(wealthOf[_users[i]], richestUserWealthEncrypted);
+        for (uint256 i; i < _users.length; ++i) {
+            UserState memory userState = userStates[_users[i]];
+
+            if (!userState.isAllowed) revert UserNotAllowed(_users[i]);
+
+            ebool success = userState.wealth.ge(richestUserWealthEncrypted);
+            richestUserWealthEncrypted = success.select(userState.wealth, richestUserWealthEncrypted);
             richestUserEncrypted = success.select(uint256(uint160(_users[i])).asEuint256(), richestUserEncrypted);
         }
 
         richestUserEncrypted.allowThis();
 
-        latestRequestId = richestUserEncrypted.requestDecryption(this.decryptionCallback.selector, "");
-        return latestRequestId;
+        requestId = richestUserEncrypted.requestDecryption(this.decryptionCallback.selector, "");
     }
 
     /**
@@ -84,7 +100,7 @@ contract ConfidentialWealthComparator {
      * @param result The result of the decryption.
      */
     function decryptionCallback(uint256 requestId, uint256 result, bytes memory) external {
-        if (msg.sender != address(inco)) revert UnauthorizedHandleAccess();
+        if (msg.sender != address(inco)) revert CallerNotInco();
         if (richestUserByRequestId[requestId] != address(0)) revert RequestAlreadyFulfilled(requestId);
 
         address richestUser = address(uint160(result));
@@ -104,6 +120,15 @@ contract ConfidentialWealthComparator {
         return richestUserByRequestId[_requestId];
     }
 
+    /**
+     * @notice Returns the wealth of a user.
+     * @param _user The address of the user.
+     * @return The encrypted wealth of the user.
+     */
+    function wealthOf(address _user) external view returns (euint256) {
+        return userStates[_user].wealth;
+    }
+
     //////// INTERNAL FUNCTIONS ////////
 
     /**
@@ -111,11 +136,15 @@ contract ConfidentialWealthComparator {
      * @param _encryptedWealth The encrypted wealth of the user in the form of an euint256.
      */
     function _submitWealth(euint256 _encryptedWealth) internal {
-        ebool success = wealthOf[msg.sender].eq(uint256(0).asEuint256());
+        UserState memory userState = userStates[msg.sender];
 
-        euint256 newWealth = success.select(_encryptedWealth, wealthOf[msg.sender]);
+        if (!userState.isAllowed) revert UserNotAllowed(msg.sender);
 
-        wealthOf[msg.sender] = newWealth;
+        ebool success = userState.wealth.eq(uint256(0).asEuint256());
+
+        euint256 newWealth = success.select(_encryptedWealth, userState.wealth);
+
+        userStates[msg.sender].wealth = newWealth;
 
         newWealth.allow(msg.sender);
         newWealth.allowThis();
